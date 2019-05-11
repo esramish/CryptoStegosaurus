@@ -53,14 +53,14 @@ def createEncodedImage(pixel_list):
     image = Image.fromarray(pixel_list)
     image.save("cat_new.png")
 
-def decodeImage(image):
+def decodeImage(image, word_len):
     pixel_list = getPixelList(image)
     width = len(pixel_list[0])
     index = 0
     bit_list = []
-    word_len = len("nukes in cuba")
+
     str_bits = ""
-    for i in range(8*word_len):
+    for i in range(word_len):
         index_x = (index + i) % width
         index_y = (index + i) // width
         parity = pixel_list[index_y][index_x][0] % 2
@@ -94,11 +94,12 @@ def main():
         img_array.append(random.randint(0,1))
     msg = input("Enter message to encode: ")
     msg_bits = convert_msg_to_bits(msg)
+    word_len = len(msg_bits)
     pixel_list_modified = insertMessege(pixel_list_unModified, msg_bits)
     print()
     createEncodedImage(pixel_list_modified)
     image2 = Image.open("cat_new.png")
-    bit_list = decodeImage(image2)
+    bit_list = decodeImage(image2, word_len)
     decodeMessege(bit_list)
 
     # print("Message bits: " + str(msg_bits))
