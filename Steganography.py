@@ -6,11 +6,12 @@ import bitarray
 # This program currently represents the least significant bit (of a given byte) first
 
 BITS_MODIFIED_PER_PIXEL = 1
+NUM_MSG_LEN_BITS = 16
 
 
 def convert_msg_to_bits(msg):
     ba = bitarray.bitarray()
-    ba.frombytes(msg.encode('utf-8'))
+    ba.frombytes(msg.encode('utf-32'))
     return ba
 
 
@@ -36,15 +37,24 @@ def insertMessege(pixel_list, message):
 
     width = len(pixel_list[0])
     index = 0
-
-
-    for i in range(len(message)):
+    msg_length = len(message)
+    len_bin_str = bin(msg_length)[2:]
+    len_ba = bitarray.bitarray()
+    for i in range(NUM_MSG_LEN_BITS - len(len_bin_str)):
+        len_ba.append(0)
+    for bit in len_bin_str:
+        len_ba.append(int(bit))
+    for i in range(msg_length + NUM_MSG_LEN_BITS):
         index_x = (index + i) % width
         index_y = (index + i) // width
-        parity = pixel_list[index_y][index_x][0]%2
         tuple_val = pixel_list[index_y][index_x]
-        least_bit = pixel_list[index_y][index_x][0] - parity + message[ i ]
-        pixel_list[index_y][index_x] = (least_bit,tuple_val[1],tuple_val[2],tuple_val[3])
+        red_val = tuple_val[0]
+        red_parity = red_val % 2
+        if i < NUM_MSG_LEN_BITS:
+            red_val += len_ba[i] - red_parity
+        else:
+            red_val += message[ i - NUM_MSG_LEN_BITS] - red_parity
+        pixel_list[index_y][index_x] = (red_val,tuple_val[1],tuple_val[2],tuple_val[3])
     return pixel_list
 
 
@@ -53,7 +63,7 @@ def createEncodedImage(pixel_list):
     image = Image.fromarray(pixel_list)
     image.save("cat_new.png")
 
-def decodeImage(image):
+def decodeImage(image2):
     pixel_list = getPixelList(image)
     width = len(pixel_list[0])
     index = 0
@@ -74,7 +84,7 @@ def decodeMessege(bit_list):
     for i in bit_list:
 
         ba.append(i)
-    return_string = ba.tobytes().decode('utf-8')
+    return_string = ba.tobytes().decode('utf-32')
     print(return_string)
 
 
