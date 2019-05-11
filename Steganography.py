@@ -6,7 +6,7 @@ import bitarray
 # This program currently represents the least significant bit (of a given byte) first
 
 BITS_MODIFIED_PER_PIXEL = 1
-word_len
+
 
 def convert_msg_to_bits(msg):
     ba = bitarray.bitarray()
@@ -58,6 +58,7 @@ def decodeImage(image):
     width = len(pixel_list[0])
     index = 0
     bit_list = []
+    word_len = len("nukes in cuba")
     str_bits = ""
     for i in range(8*word_len):
         index_x = (index + i) % width
@@ -91,8 +92,7 @@ def main():
     img_array = [] # this will ultimately be the image provided through CLI input
     for i in range(3072): # This loop will be removed once we input images
         img_array.append(random.randint(0,1))
-    msg = input("Enter message to encode: "
-    word_len = msg
+    msg = input("Enter message to encode: ")
     msg_bits = convert_msg_to_bits(msg)
     pixel_list_modified = insertMessege(pixel_list_unModified, msg_bits)
     print()
