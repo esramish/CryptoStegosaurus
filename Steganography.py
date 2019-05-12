@@ -7,15 +7,14 @@ import bitarray
 
 BITS_MODIFIED_PER_PIXEL = 1
 NUM_MSG_LEN_BITS = 16
+OUTPUT_IMAGE_PREFIX = "output_"
 
 seed = None
-
 
 def convert_msg_to_bits(msg):
     ba = bitarray.bitarray()
     ba.frombytes(msg.encode('utf-32'))
     return ba
-
 
 def encode_msg(msg_bits, img_bits):
     if len(msg_bits) * 8 / BITS_MODIFIED_PER_PIXEL > len(img_bits):
@@ -30,10 +29,6 @@ def encode_msg(msg_bits, img_bits):
 def getPixelList(image):
     pixel_array = np.array(image)
     return pixel_array
-
-
-
-
 
 def insertMessege(image_pixels, message):
     global seed
@@ -61,36 +56,35 @@ def insertMessege(image_pixels, message):
         image_pixels[index_y][index_x] = tuple(pixel_list)
     return image_pixels
 
-
-
 def createEncodedImage(image_pixels, old_filename):
     image = Image.fromarray(image_pixels)
-    image.save("output_"+old_filename)
-    print("Encoded image saved as 'output_%s'" % old_filename)
+    image.save(OUTPUT_IMAGE_PREFIX+old_filename)
+    print("Encoded image saved as '%s'" % (OUTPUT_IMAGE_PREFIX + old_filename))
 
-def decodeImage(image):
+def extractMessage(image):
+    global seed
     image_pixels = getPixelList(image)
     width = len(image_pixels[0])
     index = 0
-    bit_list = []
-    word_len = len("nukes in cuba")
-    str_bits = ""
-    for i in range(8*word_len):
+    message_length = 0
+    random.seed(seed)
+    i = 0
+    message_ba = bitarray.bitarray()
+    while i < NUM_MSG_LEN_BITS + message_length:
         index_x = (index + i) % width
         index_y = (index + i) // width
-        parity = image_pixels[index_y][index_x][0] % 2
-        str_bits += str(parity)
-        bit_list.append(parity)
-    return bit_list
-
-def decodeMessege(bit_list):
-
-    ba = bitarray.bitarray()
-    for i in bit_list:
-
-        ba.append(i)
-    return_string = ba.tobytes().decode('utf-32')
-    print(return_string)
+        color_num = random.randint(0, 2)
+        parity = image_pixels[index_y][index_x][color_num] % 2
+        if i < NUM_MSG_LEN_BITS:
+            message_length += parity * 2**(NUM_MSG_LEN_BITS - i - 1)
+        else:
+            message_ba.append(parity)
+        i+=1
+    try:
+        return_string = message_ba.tobytes().decode('utf-32')
+        return return_string
+    except:
+        return None
 
 def set_seed():
     global seed
@@ -122,10 +116,19 @@ def do_decoding():
     if seed == None:
         print("Need to set seed first")
         return
-    image2 = Image.open("cat_new.png")
-    bit_list = decodeImage(image2)
-    decodeMessege(bit_list)
-
+    while True:
+        try:
+            filename = input("Enter image filename: ")
+            image = Image.open(filename)
+            break
+        except: 
+            print("File '%s' not found" % filename)
+    image = Image.open(filename)
+    message = extractMessage(image)
+    if message != None:
+        print("Message found: \n%s" % message)
+    else:
+        print("Decoding failed. Sad.")
 
 def main():
     while True:
