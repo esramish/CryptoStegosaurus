@@ -8,6 +8,8 @@ import bitarray
 BITS_MODIFIED_PER_PIXEL = 1
 NUM_MSG_LEN_BITS = 16
 
+seed = None
+
 
 def convert_msg_to_bits(msg):
     ba = bitarray.bitarray()
@@ -33,9 +35,9 @@ def getPixelList(image):
 
 
 
-def insertMessege(pixel_list, message):
-
-    width = len(pixel_list[0])
+def insertMessege(image_pixels, message):
+    global seed
+    width = len(image_pixels[0])
     index = 0
     msg_length = len(message)
     len_bin_str = bin(msg_length)[2:]
@@ -44,28 +46,31 @@ def insertMessege(pixel_list, message):
         len_ba.append(0)
     for bit in len_bin_str:
         len_ba.append(int(bit))
+    random.seed(seed)
     for i in range(msg_length + NUM_MSG_LEN_BITS):
         index_x = (index + i) % width
         index_y = (index + i) // width
-        tuple_val = pixel_list[index_y][index_x]
-        red_val = tuple_val[0]
-        red_parity = red_val % 2
+        pixel_tuple = image_pixels[index_y][index_x]
+        pixel_list = list(pixel_tuple)
+        color_num = random.randint(0, 2)
+        parity = pixel_list[color_num] % 2
         if i < NUM_MSG_LEN_BITS:
-            red_val += len_ba[i] - red_parity
+            pixel_list[color_num] += len_ba[i] - parity
         else:
-            red_val += message[ i - NUM_MSG_LEN_BITS] - red_parity
-        pixel_list[index_y][index_x] = (red_val,tuple_val[1],tuple_val[2],tuple_val[3])
-    return pixel_list
+            pixel_list[color_num] += message[ i - NUM_MSG_LEN_BITS] - parity
+        image_pixels[index_y][index_x] = tuple(pixel_list)
+    return image_pixels
 
 
 
-def createEncodedImage(pixel_list):
-    image = Image.fromarray(pixel_list)
-    image.save("cat_new.png")
+def createEncodedImage(image_pixels, old_filename):
+    image = Image.fromarray(image_pixels)
+    image.save("output_"+old_filename)
+    print("Encoded image saved as 'output_%s'" % old_filename)
 
-def decodeImage(image2):
-    pixel_list = getPixelList(image)
-    width = len(pixel_list[0])
+def decodeImage(image):
+    image_pixels = getPixelList(image)
+    width = len(image_pixels[0])
     index = 0
     bit_list = []
     word_len = len("nukes in cuba")
@@ -73,7 +78,7 @@ def decodeImage(image2):
     for i in range(8*word_len):
         index_x = (index + i) % width
         index_y = (index + i) // width
-        parity = pixel_list[index_y][index_x][0] % 2
+        parity = image_pixels[index_y][index_x][0] % 2
         str_bits += str(parity)
         bit_list.append(parity)
     return bit_list
@@ -87,32 +92,59 @@ def decodeMessege(bit_list):
     return_string = ba.tobytes().decode('utf-32')
     print(return_string)
 
+def set_seed():
+    global seed
+    while True: 
+        try: 
+            seed = int(input("Enter secret seed: \n"))
+            return seed
+        except: 
+            print("Please enter a number.")
 
-
-
-
-
-def main():
-    image = Image.open("cat.png")
-
-    pixel_list_unModified = getPixelList(image)
-
-
-
-    img_array = [] # this will ultimately be the image provided through CLI input
-    for i in range(3072): # This loop will be removed once we input images
-        img_array.append(random.randint(0,1))
+def do_encoding():
+    if seed == None:
+        print("Need to set seed first")
+        return
+    while True:
+        try:
+            filename = input("Enter image filename: ")
+            image = Image.open(filename)
+            break
+        except: 
+            print("File '%s' not found" % filename)
+    image_pixels_unModified = getPixelList(image)
     msg = input("Enter message to encode: ")
     msg_bits = convert_msg_to_bits(msg)
-    pixel_list_modified = insertMessege(pixel_list_unModified, msg_bits)
-    print()
-    createEncodedImage(pixel_list_modified)
+    image_pixels_modified = insertMessege(image_pixels_unModified, msg_bits)
+    createEncodedImage(image_pixels_modified, filename)
+    
+def do_decoding():
+    if seed == None:
+        print("Need to set seed first")
+        return
     image2 = Image.open("cat_new.png")
     bit_list = decodeImage(image2)
     decodeMessege(bit_list)
 
-    # print("Message bits: " + str(msg_bits))
-    # print("Array with message encoded inside: " + str(encode_msg(msg_bits, img_array)))
+
+def main():
+    while True:
+        print("\nWhat would you like to do?")
+        print("1: Set secret seed")
+        print("2: Encode message in image")
+        print("3: Decode message from image")
+        print("4: Quit")
+        selection = input("> ")
+        if selection == "1":
+            set_seed()
+        elif selection == "2":
+            do_encoding()
+        elif selection == "3":
+            do_decoding()
+        elif selection == "4":
+            return
+        else:
+            print("Please enter one of the numbers above.")
 
 
 if __name__ == "__main__":
