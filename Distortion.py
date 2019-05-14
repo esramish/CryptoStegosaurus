@@ -32,76 +32,95 @@ def fillImage(message, pixel_list,  colors_used, bits_per_color):
     mod_pixel_list = pixel_list
 
     i = 0
-    try:
-        for z in mod_pixel_list:
+    for z in mod_pixel_list:
 
-            for j in range(len(z)):
-                for colors in range(len(colors_used)):
+        for j in range(len(z)):
 
-                    if colors_used[colors] == 0:
-                        x = 1
-                        #color_vals.append(z[j][colors])
+            for colors in range(len(colors_used)):
 
+                '''For each color that is set to change'''
 
-                    else:
-                        binary = bin(z[j][colors])[2:]
+                if colors_used[colors] == 1:
+                    binary = bin(z[j][colors])[2:]
 
 
-                        if len(binary) != 8:
-                            for k in range(8- len(binary)):
-                                binary = "0" + binary
+                    ''' Pad the binary to be of size 8'''
+                    if len(binary) != 8:
+                        for k in range(8- len(binary)):
+                            binary = "0" + binary
 
-                        for bit_pos in range(bits_per_color):
-
-                            if(i == len(message)):
-                                return mod_pixel_list
-
-                            binary = changeBits(binary, bit_pos, int(message[i]))
-                            i += 1
+                    '''Change bits_per_color number of bits in a selected color value'''
+                    for bit_pos in range(bits_per_color):
 
 
-                        z[j][colors] = int(binary, 2)
+                        '''If message is not long enough for the image'''
+                        if(i == len(message)):
+                            return mod_pixel_list
 
+                        binary = changeBits(binary, bit_pos, int(message[i]))
+                        i += 1
 
-
-    except IndexError:
-        return mod_pixel_list
-
+                    z[j][colors] = int(binary, 2)
     return mod_pixel_list
 
 
+def getColorsToChange():
 
+    return_list = [ 0 , 0 , 0 , 0 ]
+    red_ans =  input("Do you want to change the red pixel? (y/n):")
+    if (red_ans == "y"):
+        return_list[0] = 1
+
+
+    blue_ans = input("Do you want to change the green pixel? (y/n):")
+    if (blue_ans == "y"):
+        return_list[1] = 1
+
+    green_ans = input("Do you want to change the blue pixel? (y/n):")
+    if (green_ans == "y"):
+        return_list[2] = 1
+
+    transparency_ans = input("Do you want to change the transparency? (y/n):")
+    if (transparency_ans  == "y"):
+        return_list[3] = 1
+
+
+    while True:
+        pixels = input("How many pixels would you like to change? (1-8)")
+        if(0 <  int(pixels) <= 8):
+            break
+        print("Not a valid answer")
+    return return_list, int(pixels)
 
 
 
 
 
 def main():
-    image = Image.open("cat.png")
+    in_image = Image.open("cat.png")
 
-    pixel_array = np.array(image)
+    pixel_array = np.array(in_image)
     height = len(pixel_array)
     width = len(pixel_array[0])
+    color_list, bits_per_color = getColorsToChange()
 
-    color_list = [1,1,1,0]
     colors_used = 0
-    bits_per_color = 7
     for i in color_list:
         if i == 1:
             colors_used += 1
 
+    ''' creates a random message to fill the image '''
     message_len = height*width * bits_per_color * colors_used
-
-    message = makeRandomString(message_len)
+    message = makeRandomString(int(message_len))
     message_bits = convert_msg_to_bits(message)
-
-    hi_message_bits = convert_msg_to_bits("h")
 
     pixel_list = fillImage(message_bits, pixel_array, color_list, bits_per_color)
 
+    out_image = Image.fromarray(pixel_list)
+    out_image.save("cat_new.png")
 
-    image = Image.fromarray(pixel_list)
-    image.save("cat_new.png")
+    print("done, please check '"'cat new'"' in this directory")
+
 
 if __name__ == "__main__":
     main()
