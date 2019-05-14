@@ -68,29 +68,52 @@ def getColorsToChange():
 
     return_list = [ 0 , 0 , 0 , 0 ]
     red_ans =  input("Do you want to change the red pixel? (y/n):")
-    if (red_ans == "y"):
-        return_list[0] = 1
+    while True:
+        if red_ans == "y":
+            return_list[0] = 1
+            break
+        elif red_ans == "n":
+            break
+        red_ans = input("Please enter y/n: ")
 
 
-    blue_ans = input("Do you want to change the green pixel? (y/n):")
-    if (blue_ans == "y"):
-        return_list[1] = 1
+    green_ans = input("Do you want to change the green pixel? (y/n):")
+    while True:
+        if green_ans == "y":
+            return_list[1] = 1
+            break
+        elif green_ans == "n":
+            break
+        green_ans = input("Please enter y/n: ")
 
-    green_ans = input("Do you want to change the blue pixel? (y/n):")
-    if (green_ans == "y"):
-        return_list[2] = 1
+    blue_ans = input("Do you want to change the blue pixel? (y/n):")
+    while True:
+        if blue_ans == "y":
+            return_list[2] = 1
+            break
+        elif blue_ans == "n":
+            break
+        blue_ans = input("Please enter y/n: ")
 
     transparency_ans = input("Do you want to change the transparency? (y/n):")
-    if (transparency_ans  == "y"):
-        return_list[3] = 1
+    while True:
+        if transparency_ans == "y":
+            return_list[3] = 1
+            break
+        elif transparency_ans == "n":
+            break
+        transparency_ans = input("Please enter y/n: ")
 
 
     while True:
-        pixels = input("How many pixels would you like to change? (1-8)")
-        if(0 <  int(pixels) <= 8):
-            break
+        bits = input("How many bits per color value would you like to change? (1-8) ")
+        try:
+            if 0 <  int(bits) <= 8:
+                break
+        except:
+            pass
         print("Not a valid answer")
-    return return_list, int(pixels)
+    return return_list, int(bits)
 
 
 
@@ -119,7 +142,7 @@ def main():
     out_image = Image.fromarray(pixel_list)
     out_image.save("cat_new.png")
 
-    print("done, please check '"'cat new'"' in this directory")
+    print("Done, please check '"'cat_new.png'"' in this directory")
 
 
 if __name__ == "__main__":
