@@ -88,11 +88,11 @@ def extractMessage(image):
 
 def set_seed():
     global seed
-    while True: 
-        try: 
+    while True:
+        try:
             seed = int(input("Enter secret seed: \n"))
             return seed
-        except: 
+        except:
             print("Please enter a number.")
 
 def do_encoding():
@@ -104,14 +104,15 @@ def do_encoding():
             filename = input("Enter image filename: ")
             image = Image.open(filename)
             break
-        except: 
+        except:
             print("File '%s' not found" % filename)
     image_pixels_unModified = getPixelList(image)
     msg = input("Enter message to encode: ")
+
     msg_bits = convert_msg_to_bits(msg)
     image_pixels_modified = insertMessege(image_pixels_unModified, msg_bits)
     createEncodedImage(image_pixels_modified, filename)
-    
+
 def do_decoding():
     if seed == None:
         print("Need to set seed first")
@@ -121,7 +122,7 @@ def do_decoding():
             filename = input("Enter image filename: ")
             image = Image.open(filename)
             break
-        except: 
+        except:
             print("File '%s' not found" % filename)
     image = Image.open(filename)
     message = extractMessage(image)
