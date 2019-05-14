@@ -113,20 +113,17 @@ def do_decoding(filename):
 
 def fprintNew(id):
     list = []
-    createFile = open(STORAGE,"w+")
+    file_write = open(STORAGE,"a+")
     file_read = open(STORAGE, "r")
     counter = 0
-    byLines= file_read.readline()
-    for i in byLines:
+    while file_read.readline() != "":
         counter+=1
-    counter+=1
     message = sha256(counter.to_bytes(8, 'big',  signed=False)).hex()
     do_encoding(message, id)
     list.append(message)
     list.append(id)
-    file_append = open(STORAGE, "a")
-    file_append.write(json.dumps(list))
-    file_append.write("\n")
+    file_write.write(json.dumps(list))
+    file_write.write("\n")
 
 def findID():
     try:
