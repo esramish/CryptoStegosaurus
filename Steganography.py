@@ -16,16 +16,6 @@ def convert_msg_to_bits(msg):
     ba.frombytes(msg.encode('utf-32'))
     return ba
 
-def encode_msg(msg_bits, img_bits):
-    if len(msg_bits) * 8 / BITS_MODIFIED_PER_PIXEL > len(img_bits):
-        print("A message that long can't be encoded in an image that small.")
-        return
-    for i in range(len(msg_bits)):
-        bit_to_encode = msg_bits[i]
-        img_bits[ (i // BITS_MODIFIED_PER_PIXEL * 8) + (i % BITS_MODIFIED_PER_PIXEL)] = bit_to_encode
-    print(img_bits)
-    return img_bits
-
 def getPixelList(image):
     pixel_array = np.array(image)
     return pixel_array
@@ -33,7 +23,6 @@ def getPixelList(image):
 def insertMessege(image_pixels, message):
     global seed
     width = len(image_pixels[0])
-    index = 0
     msg_length = len(message)
     len_bin_str = bin(msg_length)[2:]
     len_ba = bitarray.bitarray()
@@ -43,8 +32,8 @@ def insertMessege(image_pixels, message):
         len_ba.append(int(bit))
     random.seed(seed)
     for i in range(msg_length + NUM_MSG_LEN_BITS):
-        index_x = (index + i) % width
-        index_y = (index + i) // width
+        index_x = (i) % width
+        index_y = (i) // width
         pixel_tuple = image_pixels[index_y][index_x]
         pixel_list = list(pixel_tuple)
         color_num = random.randint(0, 2)
@@ -65,14 +54,13 @@ def extractMessage(image):
     global seed
     image_pixels = getPixelList(image)
     width = len(image_pixels[0])
-    index = 0
     message_length = 0
     random.seed(seed)
     i = 0
     message_ba = bitarray.bitarray()
     while i < NUM_MSG_LEN_BITS + message_length:
-        index_x = (index + i) % width
-        index_y = (index + i) // width
+        index_x = (i) % width
+        index_y = (i) // width
         color_num = random.randint(0, 2)
         parity = image_pixels[index_y][index_x][color_num] % 2
         if i < NUM_MSG_LEN_BITS:
