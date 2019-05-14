@@ -10,7 +10,7 @@ BITS_MODIFIED_PER_PIXEL = 1
 
 def convert_msg_to_bits(msg):
     ba = bitarray.bitarray()
-    ba.frombytes(msg.encode('utf-8'))
+    ba.frombytes(msg.encode('utf-16'))
     return ba
 
 
@@ -53,12 +53,13 @@ def createEncodedImage(pixel_list):
     image = Image.fromarray(pixel_list)
     image.save("cat_new.png")
 
-def decodeImage(image):
+
+def decodeImage(image, messageLen):
     pixel_list = getPixelList(image)
     width = len(pixel_list[0])
     index = 0
     bit_list = []
-    word_len = len("nukes in cuba")
+    word_len = messageLen * 8
     str_bits = ""
     for i in range(8*word_len):
         index_x = (index + i) % width
@@ -72,9 +73,8 @@ def decodeMessege(bit_list):
 
     ba = bitarray.bitarray()
     for i in bit_list:
-
         ba.append(i)
-    return_string = ba.tobytes().decode('utf-8')
+    return_string = ba.tobytes().decode('utf-16')
     print(return_string)
 
 
@@ -93,6 +93,7 @@ def main():
     for i in range(3072): # This loop will be removed once we input images
         img_array.append(random.randint(0,1))
     msg = input("Enter message to encode: ")
+
     msg_bits = convert_msg_to_bits(msg)
     pixel_list_modified = insertMessege(pixel_list_unModified, msg_bits)
     print()
